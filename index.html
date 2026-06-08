@@ -16,6 +16,8 @@
   <img class="lightbox-content" id="lightbox-img" alt="تكبير الصورة">
 </div>
 
+<div id="floatingAvatar" class="floating-avatar" onclick="openLightboxFromFloat()"></div>
+
 <button class="settings-toggle" id="settingsToggle" onclick="toggleSettings()" aria-label="الإعدادات">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -147,6 +149,8 @@ function toggleAvatar() {
   state.avatar = document.getElementById('avatarToggle').checked; saveState();
   var el = document.getElementById('avatar-wrap');
   if (el) el.style.display = state.avatar ? '' : 'none';
+  var fa = document.getElementById('floatingAvatar');
+  if (fa) fa.style.display = state.avatar ? '' : 'none';
 }
 
 function toggleLinks() {
@@ -160,6 +164,11 @@ function openLightbox(src) {
   document.getElementById('lightbox-img').src = src;
   lb.style.display = 'flex';
   setTimeout(function() { lb.classList.add('show'); }, 10);
+}
+function openLightboxFromFloat() {
+  var fa = document.getElementById('floatingAvatar');
+  var img = fa.querySelector('img');
+  if (img) openLightbox(img.src);
 }
 function closeLightbox() {
   var lb = document.getElementById('lightbox');
@@ -268,9 +277,16 @@ function renderCV(data) {
 
   app.innerHTML = '<div class="header"><div class="header-content"><div><h1>' + firstName + ' <span>' + lastName + '</span></h1><div class="title">' + p.title + '</div><div class="subtitle">' + p.subtitle + '</div><div class="contact-info"><a href="mailto:' + p.email + '">' + p.email + '</a><a href="tel:' + p.phone + '">' + p.phone + '</a><span>' + p.location + '</span><a href="' + p.github + '" target="_blank">github.com/jminoktit</a></div></div><div id="avatar-wrap" class="avatar-wrap">' + avatarHTML + '</div></div></div><div class="body">' + sectionsHTML + '</div>';
 
+  var fa = document.getElementById('floatingAvatar');
+  if (p.avatar) {
+    fa.innerHTML = '<img src="' + p.avatar + '" alt="الصورة الشخصية" class="float-avatar-img">';
+  } else {
+    fa.innerHTML = '<div class="float-avatar-text">' + p.monogram + '</div>';
+  }
+
   document.getElementById('app').className = 'container view-' + state.viewMode;
   if (state.compact) document.getElementById('app').classList.add('compact');
-  if (!state.avatar) { var el = document.getElementById('avatar-wrap'); if (el) el.style.display = 'none'; }
+  if (!state.avatar) { var el = document.getElementById('avatar-wrap'); if (el) el.style.display = 'none'; fa.style.display = 'none'; } else { fa.style.display = ''; }
   if (!state.links) { var els = document.querySelectorAll('.project-link'); for (var i = 0; i < els.length; i++) els[i].style.display = 'none'; }
 
   applyState();
