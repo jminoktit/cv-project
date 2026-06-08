@@ -9,7 +9,8 @@
     "phone": "01556123991",
     "location": "Port Said, Egypt",
     "github": "https://github.com/jminoktit",
-    "avatar": "my.jpeg"
+    "avatar": "avatar.svg",
+    "photo": "my.jpeg"
   },
   "summary": "Full-stack developer with strong expertise in Python/Django and modern JavaScript frameworks. Experienced in building AI-powered applications (LLM integration, speech-to-text, NLP), real-time systems (WebSockets), 3D web graphics (Three.js), e-commerce platforms, and RESTful APIs. Passionate about clean architecture, OOP design, and production-ready deployments.",
   "skills": [

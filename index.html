@@ -166,8 +166,8 @@ function openLightbox(src) {
   setTimeout(function() { lb.classList.add('show'); }, 10);
 }
 function openLightboxFromFloat() {
-  if (cvData && cvData.personal && cvData.personal.avatar) {
-    openLightbox(cvData.personal.avatar);
+  if (cvData && cvData.personal && (cvData.personal.photo || cvData.personal.avatar)) {
+    openLightbox(cvData.personal.photo || cvData.personal.avatar);
   }
 }
 function closeLightbox() {
@@ -269,7 +269,7 @@ function renderCV(data) {
     }
   }
 
-  var avatarHTML = '<div class="avatar">' + p.monogram + '</div>';
+  var avatarHTML = p.avatar ? '<img src="' + p.avatar + '" alt="avatar" class="avatar-img">' : '<div class="avatar">' + p.monogram + '</div>';
 
   var nameParts = p.name.split(' ');
   var firstName = nameParts[0];
@@ -278,7 +278,9 @@ function renderCV(data) {
   app.innerHTML = '<div class="header"><div class="header-content"><div><h1>' + firstName + ' <span>' + lastName + '</span></h1><div class="title">' + p.title + '</div><div class="subtitle">' + p.subtitle + '</div><div class="contact-info"><a href="mailto:' + p.email + '">' + p.email + '</a><a href="tel:' + p.phone + '">' + p.phone + '</a><span>' + p.location + '</span><a href="' + p.github + '" target="_blank">github.com/jminoktit</a></div></div><div id="avatar-wrap" class="avatar-wrap">' + avatarHTML + '</div></div></div><div class="body">' + sectionsHTML + '</div>';
 
   var fa = document.getElementById('floatingAvatar');
-  if (p.avatar) {
+  if (p.photo) {
+    fa.innerHTML = '<img src="' + p.photo + '" alt="الصورة الشخصية" class="float-avatar-img">';
+  } else if (p.avatar) {
     fa.innerHTML = '<img src="' + p.avatar + '" alt="الصورة الشخصية" class="float-avatar-img">';
   } else {
     fa.innerHTML = '<div class="float-avatar-text">' + p.monogram + '</div>';
