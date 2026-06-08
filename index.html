@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mohammed Elmouge - السيرة الذاتية</title>
+<link id="theme-css" rel="stylesheet" href="theme-dark.css">
+<link rel="stylesheet" href="cv.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+</head>
+<body>
+
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img class="lightbox-content" id="lightbox-img" alt="تكبير الصورة">
+</div>
+
+<button class="settings-toggle" id="settingsToggle" onclick="toggleSettings()" aria-label="الإعدادات">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+  </svg>
+</button>
+
+<div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>الإعدادات</h2>
+    <button class="settings-close" onclick="toggleSettings()">&times;</button>
+  </div>
+  <div class="settings-body">
+
+    <div class="setting-group">
+      <label>السمة</label>
+      <div class="theme-options" id="themeOptions">
+        <button class="theme-option" data-theme="dark" onclick="setTheme('dark')">داكن</button>
+        <button class="theme-option" data-theme="light" onclick="setTheme('light')">فاتح</button>
+        <button class="theme-option" data-theme="ocean" onclick="setTheme('ocean')">أوقيانوس</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>حجم الخط الأساسي</label>
+      <div class="font-control">
+        <button onclick="changeFontSize(-1)">-</button>
+        <span id="fontSizeDisplay">14px</span>
+        <button onclick="changeFontSize(1)">+</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>وضع العرض</label>
+      <select id="viewMode" onchange="setViewMode(this.value)">
+        <option value="standard">قياسي</option>
+        <option value="minimal">بسيط</option>
+        <option value="modern">حديث</option>
+        <option value="timeline">خط زمني</option>
+        <option value="grid">شبكي</option>
+        <option value="classic">كلاسيك</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label>التخطيط</label>
+      <div class="toggle-row">
+        <span>وضع مضغوط</span>
+        <label class="switch"><input type="checkbox" id="compactMode" onchange="toggleCompact()"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span>إظهار الصورة الشخصية</span>
+        <label class="switch"><input type="checkbox" id="avatarToggle" checked onchange="toggleAvatar()"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span>روابط المشاريع (GitHub)</span>
+        <label class="switch"><input type="checkbox" id="linksToggle" checked onchange="toggleLinks()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>إظهار / إخفاء الأقسام</label>
+      <div id="sectionVisibility"></div>
+    </div>
+
+    <div class="setting-group">
+      <label>ترتيب الأقسام (اسحب وأفلت)</label>
+      <div class="section-order" id="sectionOrder"></div>
+    </div>
+
+    <div class="setting-group">
+      <label>أقسام مخصصة</label>
+      <div id="customSectionsList"></div>
+      <button class="btn-sm" onclick="addCustomSection()" style="margin-top:8px;width:100%">+ إضافة قسم مخصص</button>
+    </div>
+
+    <button class="btn-reset" onclick="resetDefaults()">إعادة ضبط الإعدادات</button>
+
+  </div>
+</div>
+
+<div class="container" id="app">
+  <div id="loading">جاري تحميل السيرة الذاتية...</div>
+</div>
+
+<script>
+const STATE_KEY = 'cv_settings';
+const DEFAULTS = { theme: 'dark', fontSize: 14, viewMode: 'standard', compact: false, avatar: true, links: true, sections: {}, sectionOrder: [] };
+
+let state, cvData, allSections = [];
+
+function loadState() {
+  try {
+    const s = localStorage.getItem(STATE_KEY);
+    return s ? Object.assign({}, DEFAULTS, JSON.parse(s)) : Object.assign({}, DEFAULTS);
+  } catch { return Object.assign({}, DEFAULTS); }
+}
+function saveState() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+  document.getElementById('settingsOverlay').classList.toggle('show');
+}
+
+function setTheme(name) {
+  state.theme = name; saveState();
+  const themes = { dark: 'theme-dark.css', light: 'theme-light.css', ocean: 'theme-ocean.css' };
+  document.getElementById('theme-css').href = themes[name];
+  document.querySelectorAll('.theme-option').forEach(function(b) { b.classList.toggle('active', b.dataset.theme === name); });
+}
+
+function changeFontSize(delta) {
+  state.fontSize = Math.max(10, Math.min(24, state.fontSize + delta)); saveState();
+  document.getElementById('fontSizeDisplay').textContent = state.fontSize + 'px';
+  document.documentElement.style.fontSize = state.fontSize + 'px';
+}
+
+function setViewMode(mode) {
+  state.viewMode = mode; saveState();
+  document.getElementById('app').className = 'container view-' + mode;
+}
+
+function toggleCompact() {
+  state.compact = document.getElementById('compactMode').checked; saveState();
+  document.getElementById('app').classList.toggle('compact', state.compact);
+}
+
+function toggleAvatar() {
+  state.avatar = document.getElementById('avatarToggle').checked; saveState();
+  var el = document.getElementById('avatar-wrap');
+  if (el) el.style.display = state.avatar ? '' : 'none';
+}
+
+function toggleLinks() {
+  state.links = document.getElementById('linksToggle').checked; saveState();
+  var els = document.querySelectorAll('.project-link');
+  for (var i = 0; i < els.length; i++) els[i].style.display = state.links ? '' : 'none';
+}
+
+function openLightbox(src) {
+  var lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  lb.style.display = 'flex';
+  setTimeout(function() { lb.classList.add('show'); }, 10);
+}
+function closeLightbox() {
+  var lb = document.getElementById('lightbox');
+  lb.classList.remove('show');
+  setTimeout(function() { lb.style.display = 'none'; }, 300);
+}
+
+function sectionLabel(key) {
+  var labels = { summary: 'ملخص', skills: 'المهارات', projects: 'المشاريع', experience: 'الخبرات', education: 'التعليم', languages: 'اللغات' };
+  return labels[key] || key;
+}
+
+function renderCV(data) {
+  cvData = data;
+  var app = document.getElementById('app');
+  var p = data.personal;
+  state = loadState();
+
+  var sectionKeys = ['summary', 'skills', 'projects', 'experience', 'education', 'languages'];
+  allSections = [];
+  for (var i = 0; i < sectionKeys.length; i++) {
+    if (data[sectionKeys[i]] && (Array.isArray(data[sectionKeys[i]]) ? data[sectionKeys[i]].length : true)) {
+      allSections.push(sectionKeys[i]);
+    }
+  }
+  if (data.customSections) {
+    for (var i = 0; i < data.customSections.length; i++) {
+      allSections.push('custom_' + i);
+    }
+  }
+
+  if (!state.sectionOrder || state.sectionOrder.length === 0) {
+    state.sectionOrder = allSections.slice();
+  }
+  if (!state.sections) state.sections = {};
+  for (var i = 0; i < allSections.length; i++) {
+    if (state.sections[allSections[i]] === undefined) state.sections[allSections[i]] = true;
+  }
+
+  var orderedSections = [];
+  for (var i = 0; i < state.sectionOrder.length; i++) {
+    if (allSections.indexOf(state.sectionOrder[i]) > -1) orderedSections.push(state.sectionOrder[i]);
+  }
+
+  var sectionsHTML = '';
+  for (var si = 0; si < orderedSections.length; si++) {
+    var key = orderedSections[si];
+    if (state.sections[key] === false) continue;
+    if (key === 'summary') {
+      sectionsHTML += '<section id="section-summary" class="cv-section"><div class="section-title">ملخص</div><div class="summary">' + data.summary + '</div></section>';
+    } else if (key === 'skills') {
+      var html = '';
+      for (var j = 0; j < data.skills.length; j++) {
+        var s = data.skills[j];
+        var tags = '';
+        for (var k = 0; k < s.tags.length; k++) tags += '<span class="skill-tag">' + escapeHtml(s.tags[k]) + '</span>';
+        html += '<div class="skill-cat"><h4>' + escapeHtml(s.category) + '</h4><div class="skill-tags">' + tags + '</div></div>';
+      }
+      sectionsHTML += '<section id="section-skills" class="cv-section"><div class="section-title">المهارات</div><div class="skills-grid">' + html + '</div></section>';
+    } else if (key === 'projects') {
+      var html = '';
+      for (var j = 0; j < data.projects.length; j++) {
+        var pr = data.projects[j];
+        var techs = '';
+        if (pr.tech) { for (var k = 0; k < pr.tech.length; k++) techs += '<span>' + escapeHtml(pr.tech[k]) + '</span>'; }
+        var feats = '';
+        if (pr.features) { feats = '<ul class="features">'; for (var k = 0; k < pr.features.length; k++) feats += '<li>' + escapeHtml(pr.features[k]) + '</li>'; feats += '</ul>'; }
+        html += '<div class="project"><div class="project-header"><h3>' + escapeHtml(pr.name) + '</h3>' + (pr.url ? '<a href="' + pr.url + '" target="_blank" class="project-link">github ↗</a>' : '') + '</div>' + (pr.tech ? '<div class="tech">' + techs + '</div>' : '') + '<p>' + escapeHtml(pr.description) + '</p>' + feats + '</div>';
+      }
+      sectionsHTML += '<section id="section-projects" class="cv-section"><div class="section-title">المشاريع</div>' + html + '</section>';
+    } else if (key === 'experience') {
+      var html = '';
+      for (var j = 0; j < data.experience.length; j++) {
+        var e = data.experience[j];
+        html += '<div class="exp-item"><div class="exp-dot"></div><div class="exp-content"><h3>' + escapeHtml(e.title) + '</h3><div class="meta">' + escapeHtml(e.meta) + '</div><p>' + escapeHtml(e.description) + '</p></div></div>';
+      }
+      sectionsHTML += '<section id="section-experience" class="cv-section"><div class="section-title">الخبرات</div>' + html + '</section>';
+    } else if (key === 'education') {
+      var html = '';
+      for (var j = 0; j < data.education.length; j++) {
+        var e = data.education[j];
+        html += '<div class="ed-item"><h3>' + escapeHtml(e.degree) + '</h3><div class="meta">' + escapeHtml(e.meta) + '</div></div>';
+      }
+      sectionsHTML += '<section id="section-education" class="cv-section"><div class="section-title">التعليم</div>' + html + '</section>';
+    } else if (key === 'languages') {
+      var html = '';
+      for (var j = 0; j < data.languages.length; j++) {
+        var l = data.languages[j];
+        html += '<div class="lang-item"><span class="lang-name">' + escapeHtml(l.name) + '</span><span class="lang-level">' + escapeHtml(l.level) + '</span></div>';
+      }
+      sectionsHTML += '<section id="section-languages" class="cv-section"><div class="section-title">اللغات</div>' + html + '</section>';
+    } else if (key.indexOf('custom_') === 0) {
+      var idx = parseInt(key.replace('custom_', ''), 10);
+      if (data.customSections && data.customSections[idx]) {
+        var cs = data.customSections[idx];
+        sectionsHTML += '<section id="section-' + key + '" class="cv-section"><div class="section-title">' + escapeHtml(cs.title) + '</div><div class="summary">' + escapeHtml(cs.content) + '</div></section>';
+      }
+    }
+  }
+
+  var avatarHTML = p.avatar ? '<img src="' + p.avatar + '" alt="الصورة الشخصية" class="avatar-img" onclick="openLightbox(\'' + p.avatar + '\')">' : '<div class="avatar">' + p.monogram + '</div>';
+
+  var nameParts = p.name.split(' ');
+  var firstName = nameParts[0];
+  var lastName = nameParts.slice(1).join(' ');
+
+  app.innerHTML = '<div class="header"><div class="header-content"><div><h1>' + firstName + ' <span>' + lastName + '</span></h1><div class="title">' + p.title + '</div><div class="subtitle">' + p.subtitle + '</div><div class="contact-info"><a href="mailto:' + p.email + '">' + p.email + '</a><a href="tel:' + p.phone + '">' + p.phone + '</a><span>' + p.location + '</span><a href="' + p.github + '" target="_blank">github.com/jminoktit</a></div></div><div id="avatar-wrap" class="avatar-wrap">' + avatarHTML + '</div></div></div><div class="body">' + sectionsHTML + '</div>';
+
+  document.getElementById('app').className = 'container view-' + state.viewMode;
+  if (state.compact) document.getElementById('app').classList.add('compact');
+  if (!state.avatar) { var el = document.getElementById('avatar-wrap'); if (el) el.style.display = 'none'; }
+  if (!state.links) { var els = document.querySelectorAll('.project-link'); for (var i = 0; i < els.length; i++) els[i].style.display = 'none'; }
+
+  applyState();
+  buildSettingsUI();
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  return div.innerHTML;
+}
+
+function applyState() {
+  var opts = document.querySelectorAll('.theme-option');
+  for (var i = 0; i < opts.length; i++) opts[i].classList.toggle('active', opts[i].dataset.theme === state.theme);
+  document.getElementById('fontSizeDisplay').textContent = state.fontSize + 'px';
+  document.documentElement.style.fontSize = state.fontSize + 'px';
+  document.getElementById('viewMode').value = state.viewMode;
+  document.getElementById('compactMode').checked = state.compact;
+  document.getElementById('avatarToggle').checked = state.avatar;
+  document.getElementById('linksToggle').checked = state.links;
+}
+
+function buildSettingsUI() {
+  var visDiv = document.getElementById('sectionVisibility');
+  var visHTML = '';
+  for (var i = 0; i < allSections.length; i++) {
+    var s = allSections[i];
+    visHTML += '<div class="toggle-row"><span>' + sectionLabel(s) + '</span><label class="switch"><input type="checkbox" ' + (state.sections[s] !== false ? 'checked' : '') + ' onchange="toggleSection(\'' + s + '\', this.checked)"><span class="slider"></span></label></div>';
+  }
+  visDiv.innerHTML = visHTML;
+
+  var orderDiv = document.getElementById('sectionOrder');
+  var orderHTML = '';
+  for (var i = 0; i < state.sectionOrder.length; i++) {
+    var s = state.sectionOrder[i];
+    if (allSections.indexOf(s) === -1) continue;
+    orderHTML += '<div class="order-item" draggable="true" data-section="' + s + '"><span class="drag-handle">⠿</span><span>' + sectionLabel(s) + '</span></div>';
+  }
+  orderDiv.innerHTML = orderHTML;
+
+  var items = document.querySelectorAll('.order-item');
+  for (var i = 0; i < items.length; i++) {
+    items[i].addEventListener('dragstart', handleDragStart);
+    items[i].addEventListener('dragover', handleDragOver);
+    items[i].addEventListener('drop', handleDrop);
+    items[i].addEventListener('dragend', handleDragEnd);
+  }
+
+  var custDiv = document.getElementById('customSectionsList');
+  if (cvData.customSections && cvData.customSections.length) {
+    var custHTML = '';
+    for (var i = 0; i < cvData.customSections.length; i++) {
+      custHTML += '<div class="toggle-row"><span>' + escapeHtml(cvData.customSections[i].title) + '</span><button class="btn-sm" onclick="removeCustomSection(' + i + ')" style="color:#ef4444">حذف</button></div>';
+    }
+    custDiv.innerHTML = custHTML;
+  } else {
+    custDiv.innerHTML = '';
+  }
+}
+
+function toggleSection(key, show) {
+  state.sections[key] = show; saveState();
+  var el = document.getElementById('section-' + key);
+  if (el) el.style.display = show ? '' : 'none';
+}
+
+var draggedItem = null;
+function handleDragStart(e) {
+  draggedItem = this; e.dataTransfer.effectAllowed = 'move';
+  this.classList.add('dragging');
+}
+function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function handleDrop(e) {
+  e.preventDefault();
+  if (draggedItem && this !== draggedItem) {
+    var from = draggedItem.dataset.section;
+    var to = this.dataset.section;
+    var idxFrom = state.sectionOrder.indexOf(from);
+    var idxTo = state.sectionOrder.indexOf(to);
+    if (idxFrom > -1 && idxTo > -1) {
+      state.sectionOrder.splice(idxFrom, 1);
+      state.sectionOrder.splice(idxTo, 0, from);
+      saveState();
+      renderCV(cvData);
+    }
+  }
+}
+function handleDragEnd() { this.classList.remove('dragging'); draggedItem = null; }
+
+function addCustomSection() {
+  var title = prompt('اسم القسم المخصص:');
+  if (!title) return;
+  var content = prompt('محتوى القسم المخصص:');
+  if (!content) return;
+  cvData.customSections = cvData.customSections || [];
+  cvData.customSections.push({ title: title, content: content });
+  state.sectionOrder.push('custom_' + (cvData.customSections.length - 1));
+  state.sections['custom_' + (cvData.customSections.length - 1)] = true;
+  saveState();
+  renderCV(cvData);
+}
+
+function removeCustomSection(idx) {
+  if (!confirm('حذف هذا القسم المخصص؟')) return;
+  cvData.customSections.splice(idx, 1);
+  state.sectionOrder = state.sectionOrder.filter(function(s) { return s !== 'custom_' + idx; });
+  delete state.sections['custom_' + idx];
+  saveState();
+  renderCV(cvData);
+}
+
+function resetDefaults() {
+  if (!confirm('إعادة ضبط جميع الإعدادات إلى الوضع الافتراضي؟')) return;
+  localStorage.removeItem(STATE_KEY);
+  state = Object.assign({}, DEFAULTS);
+  document.getElementById('theme-css').href = 'theme-dark.css';
+  document.documentElement.style.fontSize = '14px';
+  renderCV(cvData);
+}
+
+fetch('cv-data.json').then(function(r) { return r.json(); }).then(function(data) { renderCV(data); }).catch(function(err) {
+  document.getElementById('app').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim)"><p style="font-size:18px;margin-bottom:12px;">تعذر تحميل البيانات</p><p style="font-size:14px">' + err.message + '</p></div>';
+});
+</script>
+</body>
+</html>

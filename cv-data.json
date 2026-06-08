@@ -4,11 +4,12 @@
     "name": "Mohammed Elmouge",
     "monogram": "ME",
     "title": "Full-Stack Developer",
-    "subtitle": "Python \u00b7 Django \u00b7 React \u00b7 Vue \u00b7 AI/ML",
+    "subtitle": "Python · Django · React · Vue · AI/ML",
     "email": "jakjak200018@gmail.com",
     "phone": "01556123991",
     "location": "Port Said, Egypt",
-    "github": "https://github.com/jminoktit"
+    "github": "https://github.com/jminoktit",
+    "avatar": ""
   },
   "summary": "Full-stack developer with strong expertise in Python/Django and modern JavaScript frameworks. Experienced in building AI-powered applications (LLM integration, speech-to-text, NLP), real-time systems (WebSockets), 3D web graphics (Three.js), e-commerce platforms, and RESTful APIs. Passionate about clean architecture, OOP design, and production-ready deployments.",
   "skills": [
@@ -106,5 +107,6 @@
   "languages": [
     { "name": "Arabic", "level": "Native" },
     { "name": "English", "level": "Professional" }
-  ]
+  ],
+  "customSections": []
 }

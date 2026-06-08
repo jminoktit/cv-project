@@ -1,0 +1,10 @@
+{
+  "name": "Mohammed Elmouge - CV",
+  "short_name": "CV",
+  "start_url": "/cv.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "ar",
+  "dir": "rtl"
+}
